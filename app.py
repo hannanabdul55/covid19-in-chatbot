@@ -163,15 +163,15 @@ def parse_response(req):
                 req)
         if 'Oxygen' in params and len(params['Oxygen']) > 0:
             return create_response_obj(
-                parse_type(oxygen[oxygen[place['type'] == place['name']]], obj='oxygen',
+                parse_type(oxygen[oxygen[place['type']] == place['name']], obj='oxygen',
                            area=place['name']))
         elif 'Medicine' in params and len(params['Medicine']) > 0:
             return create_response_obj(
-                parse_type(meds[meds[place['type'] == place['name']]], obj='medicines',
+                parse_type(meds[meds[place['type']] == place['name']], obj='medicines',
                            area=place['name']))
         elif 'Plasma' in params and len(params['Plasma']) > 0:
             return create_response_obj(
-                parse_type(plasma[plasma[place['type'] == place['name']]], obj='plasma',
+                parse_type(plasma[plasma[place['type']] == place['name']], obj='plasma',
                            area=place['name']))
     return create_response_obj(
         "Sorry, I did not recognize this request"
