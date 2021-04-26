@@ -1,17 +1,11 @@
 from collections import Iterable
 
-from flask import Flask
-
 from flask import Flask, request
 import pandas as pd
-import json
 import sys
-import pprint
-
-from datetime import datetime, date
-from dateutil import parser
 
 import urllib.request, json
+import urllib
 
 app = Flask(__name__)
 
@@ -109,7 +103,7 @@ def parse_type(df_o, obj, area=None, available_only=True):
         df_o = df_o[df_o['availability'] == 'Available']
     if df_o.shape[0] < 1:
         return f"Sorry, I did not get any results for {obj} in {area}. Please try with your state name here instead. If you did try with your state, please contact elsewhere as it looks like we have no record of any oxygen availability at that area!"
-    res_str = f"Here are the top {max_count} items what I have for {obj} in {area}. If you need more, please visit: {get_url_for_place(area)}\n"
+    res_str = f"Here are the top {max_count} items what I have for {obj} in {area}. If you need more, please visit: {get_url_for_place(area)} \n"
     count = 0
     for row in df_o.itertuples(index=False, name="Entry"):
         count += 1
@@ -129,7 +123,7 @@ def parse_type(df_o, obj, area=None, available_only=True):
                 it += f"\t Description: {row.description}\n"
             if hasattr(row, 'instructions') and row.instructions is not None and len(
                     row.instructions) > 0:
-                it += f"\t Instructions: {row.instrucutions}\n"
+                it += f"\t Instructions: {row.instructions}\n"
             if hasattr(row, 'type') and isinstance(row.type, Iterable) and len(row.type) > 0:
                 it += f"\t Types: {row.type}\n"
 
