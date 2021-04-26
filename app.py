@@ -114,7 +114,10 @@ def parse_type(df_o, obj, area=None, available_only=True):
             if hasattr(row, 'contactName') and row.contactName is not None and len(
                     row.contactName) > 0:
                 it += f"\t Contact Name: {row.contactName}\t"
-            it += f"\tCompany: {row.companyName}\t Phone Numbers: +91-{str(row.phone1)}, {row.phone2 if hasattr(row, 'phone2') and row.phone2 is not None else ''}\n"
+            if hasattr(row, 'companyName'):
+                it+= f"\tCompany: {row.companyName}"
+            if hasattr(row, 'phone1'):
+                it += f"\t Phone Numbers: +91-{str(row.phone1)}, {row.phone2 if hasattr(row, 'phone2') and row.phone2 is not None else ''}\n"
 
             if hasattr(row, 'emailId') and row.emailId is not None:
                 it += f"\t Email: {row.emailId}"
