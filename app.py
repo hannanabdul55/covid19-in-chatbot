@@ -146,40 +146,40 @@ def parse_type(df_o, obj, area=None, available_only=True):
 
 
 def parse_response(req):
-    try:
-        intent = req['queryResult']['intent']
-        if intent['displayName'] == 'Query':
-            place = {}
-            params = req['queryResult']['parameters']
-            if 'geo-city' in params:
-                place['name'] = params['geo-city']
-                place['type'] = 'city'
-            elif 'geo-state' in params:
-                place['name'] = params['geo-state']
-                place['type'] = 'state'
-            else:
-                create_response_obj(
-                    "Please specify a state of city in your query. If you did not get a response for a city, please try querying with your state",
-                    req)
-            if 'Oxygen' in params and len(params['Oxygen']) > 0:
-                return create_response_obj(
-                    parse_type(oxygen[oxygen[place['type'] == place['name']]], obj='oxygen',
-                               area=place['name']))
-            elif 'Medicine' in params and len(params['Medicine']) > 0:
-                return create_response_obj(
-                    parse_type(meds[meds[place['type'] == place['name']]], obj='medicines',
-                               area=place['name']))
-            elif 'Plasma' in params and len(params['Plasma']) > 0:
-                return create_response_obj(
-                    parse_type(plasma[plasma[place['type'] == place['name']]], obj='plasma',
-                               area=place['name']))
-        return create_response_obj(
-            "Sorry, I did not recognize this request"
-        )
+    # try:
+    intent = req['queryResult']['intent']
+    if intent['displayName'] == 'Query':
+        place = {}
+        params = req['queryResult']['parameters']
+        if 'geo-city' in params:
+            place['name'] = params['geo-city']
+            place['type'] = 'city'
+        elif 'geo-state' in params:
+            place['name'] = params['geo-state']
+            place['type'] = 'state'
+        else:
+            create_response_obj(
+                "Please specify a state of city in your query. If you did not get a response for a city, please try querying with your state",
+                req)
+        if 'Oxygen' in params and len(params['Oxygen']) > 0:
+            return create_response_obj(
+                parse_type(oxygen[oxygen[place['type'] == place['name']]], obj='oxygen',
+                           area=place['name']))
+        elif 'Medicine' in params and len(params['Medicine']) > 0:
+            return create_response_obj(
+                parse_type(meds[meds[place['type'] == place['name']]], obj='medicines',
+                           area=place['name']))
+        elif 'Plasma' in params and len(params['Plasma']) > 0:
+            return create_response_obj(
+                parse_type(plasma[plasma[place['type'] == place['name']]], obj='plasma',
+                           area=place['name']))
+    return create_response_obj(
+        "Sorry, I did not recognize this request"
+    )
 
-    except KeyError as e:
-        eprint("KeyError parsing response", e)
-        return error_response
+    # except KeyError as e:
+    #     eprint("KeyError parsing response", e)
+    #     return error_response
     # except:
     #     eprint("Unexpected error parsing response")
     #     return unexpected_error_response
