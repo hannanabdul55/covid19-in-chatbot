@@ -115,17 +115,20 @@ def parse_type(df_o, obj, area=None, available_only=True):
         if count <= max_count:
             if hasattr(row, 'name') and row.name is not None and len(row.name) > 0:
                 it += f"1. \n\t Name: {row.name}\t"
-            if hasattr(row, 'contactName') and row.contactName is not None and len(row.contactName) > 0:
+            if hasattr(row, 'contactName') and row.contactName is not None and len(
+                    row.contactName) > 0:
                 it += f"\t Contact Name: {row.contactName}\t"
             it += f"\tCompany: {row.companyName}\t Phone Numbers: +91-{str(row.phone1)}, {row.phone2 if hasattr(row, 'phone2') and row.phone2 is not None else ''}\n"
 
             if hasattr(row, 'emailId') and row.emailId is not None:
                 it += f"\t Email: {row.emailId}"
-            if hasattr(row, 'description') and row.description is not None and len(row.description) > 0:
+            if hasattr(row, 'description') and row.description is not None and len(
+                    row.description) > 0:
                 it += f"\t Description: {row.description}\n"
-            if hasattr(row, 'instructions') and row.instructions is not None and len(row.instructions) > 0:
+            if hasattr(row, 'instructions') and row.instructions is not None and len(
+                    row.instructions) > 0:
                 it += f"\t Instructions: {row.instrucutions}\n"
-            if hasattr(row, 'type') and  len(row.type) > 0:
+            if hasattr(row, 'type') and len(row.type) > 0:
                 it += f"\t Types: {row.type}\n"
 
             if hasattr(row, 'verificationStatus') and row.verificationStatus is not None:
@@ -133,7 +136,8 @@ def parse_type(df_o, obj, area=None, available_only=True):
 
             if hasattr(row, 'lastVerifiedOn') and row.lastVerifiedOn is not None:
                 it += f"\t Last verified on: {row.lastVerifiedOn}\n"
-            if hasattr(row, 'sourceName') and row.sourceName is not None and len(row.sourceName) > 0:
+            if hasattr(row, 'sourceName') and row.sourceName is not None and len(
+                    row.sourceName) > 0:
                 it += f"\t Source: {row.sourceName}"
 
         it += "\n\n\n"
@@ -157,15 +161,15 @@ def parse_response(req):
                 create_response_obj(
                     "Please specify a state of city in your query. If you did not get a response for a city, please try querying with your state",
                     req)
-            if 'Oxygen' in params:
+            if 'Oxygen' in params and len(params['Oxygen']) > 0:
                 return create_response_obj(
                     parse_type(oxygen[oxygen[place['type'] == place['name']]], obj='oxygen',
                                area=place['name']))
-            elif 'Medicine' in params:
+            elif 'Medicine' in params and len(params['Medicine']) > 0:
                 return create_response_obj(
                     parse_type(meds[meds[place['type'] == place['name']]], obj='medicines',
                                area=place['name']))
-            elif 'Plasma' in params:
+            elif 'Plasma' in params and len(params['Plasma']) > 0:
                 return create_response_obj(
                     parse_type(plasma[plasma[place['type'] == place['name']]], obj='plasma',
                                area=place['name']))
