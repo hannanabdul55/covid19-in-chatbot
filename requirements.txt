@@ -1,0 +1,5 @@
+pandas
+gunicorn
+Flask
+pip
+setuptools
