@@ -1,3 +1,5 @@
+from collections import Iterable
+
 from flask import Flask
 
 from flask import Flask, request
@@ -13,7 +15,7 @@ import urllib.request, json
 
 app = Flask(__name__)
 
-base_c_url = "https://life.coronasafe.network/"
+base_c_url = "https://life.coronasafe.network"
 max_count = 15
 
 
@@ -128,7 +130,7 @@ def parse_type(df_o, obj, area=None, available_only=True):
             if hasattr(row, 'instructions') and row.instructions is not None and len(
                     row.instructions) > 0:
                 it += f"\t Instructions: {row.instrucutions}\n"
-            if hasattr(row, 'type') and len(row.type) > 0:
+            if hasattr(row, 'type') and isinstance(row.type, Iterable) and len(row.type) > 0:
                 it += f"\t Types: {row.type}\n"
 
             if hasattr(row, 'verificationStatus') and row.verificationStatus is not None:
@@ -145,6 +147,17 @@ def parse_type(df_o, obj, area=None, available_only=True):
     return res_str
 
 
+def city_mapping(city):
+    m = {
+        'Mumbai': 'Mumbai City',
+        'Bengaluru': 'Bengaluru (Bangalore) Urban',
+        'Delhi': 'West Delhi'
+    }
+    if city in m:
+        return m[city]
+    else:
+        return city
+
 def parse_response(req):
     # try:
     intent = req['queryResult']['intent']
@@ -152,8 +165,8 @@ def parse_response(req):
         place = {}
         params = req['queryResult']['parameters']
         if 'geo-city' in params:
-            place['name'] = params['geo-city']
-            place['type'] = 'city'
+            place['name'] = city_mapping(params['geo-city'])
+            place['type'] = 'district'
         elif 'geo-state' in params:
             place['name'] = params['geo-state']
             place['type'] = 'state'
@@ -162,6 +175,8 @@ def parse_response(req):
                 "Please specify a state of city in your query. If you did not get a response for a city, please try querying with your state",
                 req)
         if 'Oxygen' in params and len(params['Oxygen']) > 0:
+            # print(place)
+            # print(oxygen[oxygen.loc[:,place['type']] == place['name']])
             return create_response_obj(
                 parse_type(oxygen[oxygen[place['type']] == place['name']], obj='oxygen',
                            area=place['name']))
