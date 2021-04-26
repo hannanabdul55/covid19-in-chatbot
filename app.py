@@ -10,7 +10,7 @@ import urllib
 app = Flask(__name__)
 
 base_c_url = "https://life.coronasafe.network"
-max_count = 15
+max_count = 2
 
 
 def eprint(*args, **kwargs):
@@ -110,7 +110,7 @@ def parse_type(df_o, obj, area=None, available_only=True):
         it = ""
         if count <= max_count:
             if hasattr(row, 'name') and row.name is not None and len(row.name) > 0:
-                it += f"1. \n\t Name: {row.name}\t"
+                it += f"{count}. \n\t Name: {row.name}\t"
             if hasattr(row, 'contactName') and row.contactName is not None and len(
                     row.contactName) > 0:
                 it += f"\t Contact Name: {row.contactName}\t"
