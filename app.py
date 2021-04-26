@@ -4,6 +4,7 @@ from flask import Flask, request
 import pandas as pd
 import json
 import sys
+import pprint
 
 from datetime import datetime, date
 from dateutil import parser
@@ -11,6 +12,9 @@ from dateutil import parser
 import urllib.request, json
 
 app = Flask(__name__)
+
+base_c_url = "https://life.coronasafe.network/"
+max_count = 15
 
 
 def eprint(*args, **kwargs):
@@ -42,8 +46,10 @@ error_response = {
 }
 
 
-def create_response_obj(resp_str):
-    res = sample_response
+def create_response_obj(resp_str, samp=None):
+    if samp is None:
+        samp = sample_response
+    res = samp
     res['fulfillmentMessages'][0]['text']['text'] = [resp_str]
     return res
 
@@ -84,12 +90,88 @@ ambulance = pd.DataFrame(
         'data'])
 
 
+def get_url_for_place(place):
+    if place == 'Bengaluru':
+        place = 'Bengaluru (Bangalore) Urban'
+    if place in states:
+        return f"{base_c_url}/{place.lower().replace(' ', '_')}"
+    for state in states:
+        for city in states[state]:
+            if place in city:
+                return f"{base_c_url}/{state.lower().replace(' ', '_')}/{city.lower().replace(' ', '_')}"
+    return base_c_url
+
+
+def parse_type(df_o, obj, area=None, available_only=True):
+    if available_only and 'availability' in df_o.columns:
+        df_o = df_o[df_o['availability'] == 'Available']
+    if df_o.shape[0] < 1:
+        return f"Sorry, I did not get any results for {obj} in {area}. Please try with your state name here instead. If you did try with your state, please contact elsewhere as it looks like we have no record of any oxygen availability at that area!"
+    res_str = f"Here are the top {max_count} items what I have for {obj} in {area}. If you need more, please visit: {get_url_for_place(area)}\n"
+    count = 0
+    for row in df_o.itertuples(index=False, name="Entry"):
+        count += 1
+        it = ""
+        if count <= max_count:
+            if hasattr(row, 'name') and row.name is not None and len(row.name) > 0:
+                it += f"1. \n\t Name: {row.name}\t"
+            if hasattr(row, 'contactName') and row.contactName is not None and len(row.contactName) > 0:
+                it += f"\t Contact Name: {row.contactName}\t"
+            it += f"\tCompany: {row.companyName}\t Phone Numbers: +91-{str(row.phone1)}, {row.phone2 if hasattr(row, 'phone2') and row.phone2 is not None else ''}\n"
+
+            if hasattr(row, 'emailId') and row.emailId is not None:
+                it += f"\t Email: {row.emailId}"
+            if hasattr(row, 'description') and row.description is not None and len(row.description) > 0:
+                it += f"\t Description: {row.description}\n"
+            if hasattr(row, 'instructions') and row.instructions is not None and len(row.instructions) > 0:
+                it += f"\t Instructions: {row.instrucutions}\n"
+            if hasattr(row, 'type') and  len(row.type) > 0:
+                it += f"\t Types: {row.type}\n"
+
+            if hasattr(row, 'verificationStatus') and row.verificationStatus is not None:
+                it += f"\t Verification Status: {row.verificationStatus}"
+
+            if hasattr(row, 'lastVerifiedOn') and row.lastVerifiedOn is not None:
+                it += f"\t Last verified on: {row.lastVerifiedOn}\n"
+            if hasattr(row, 'sourceName') and row.sourceName is not None and len(row.sourceName) > 0:
+                it += f"\t Source: {row.sourceName}"
+
+        it += "\n\n\n"
+        res_str += it
+    return res_str
+
+
 def parse_response(req):
     try:
         intent = req['queryResult']['intent']
         if intent['displayName'] == 'Query':
-            city =
-        return create_response_obj(final_resp)
+            place = {}
+            params = req['queryResult']['parameters']
+            if 'geo-city' in params:
+                place['name'] = params['geo-city']
+                place['type'] = 'city'
+            elif 'geo-state' in params:
+                place['name'] = params['geo-state']
+                place['type'] = 'state'
+            else:
+                create_response_obj(
+                    "Please specify a state of city in your query. If you did not get a response for a city, please try querying with your state",
+                    req)
+            if 'Oxygen' in params:
+                return create_response_obj(
+                    parse_type(oxygen[oxygen[place['type'] == place['name']]], obj='oxygen',
+                               area=place['name']))
+            elif 'Medicine' in params:
+                return create_response_obj(
+                    parse_type(meds[meds[place['type'] == place['name']]], obj='medicines',
+                               area=place['name']))
+            elif 'Plasma' in params:
+                return create_response_obj(
+                    parse_type(plasma[plasma[place['type'] == place['name']]], obj='plasma',
+                               area=place['name']))
+        return create_response_obj(
+            "Sorry, I did not recognize this request"
+        )
 
     except KeyError as e:
         eprint("KeyError parsing response", e)
@@ -105,7 +187,7 @@ def hello_world():
         data = json.loads(request.data)
         print(data)
         return parse_response(data)
-        return sample_response
+        # return sample_response
     else:
         return 'GET not implemented'
 
