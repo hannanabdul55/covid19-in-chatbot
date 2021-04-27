@@ -161,10 +161,10 @@ def parse_response(req):
     if intent['displayName'] == 'Query':
         place = {}
         params = req['queryResult']['parameters']
-        if 'geo-city' in params:
+        if 'geo-city' in params and len(params['geo-city'])>0:
             place['name'] = city_mapping(params['geo-city'])
             place['type'] = 'district'
-        elif 'geo-state' in params:
+        elif 'geo-state' in params and len(params['geo-state'])>0:
             place['name'] = params['geo-state']
             place['type'] = 'state'
         else:
@@ -175,15 +175,16 @@ def parse_response(req):
             # print(place)
             # print(oxygen[oxygen.loc[:,place['type']] == place['name']])
             return create_response_obj(
-                parse_type(oxygen[oxygen[place['type']] == place['name']], obj='oxygen',
+                parse_type(oxygen[(oxygen[place['type']] == place['name']) | (oxygen['city'] == place['name'])], obj='oxygen',
                            area=place['name']))
         elif 'Medicine' in params and len(params['Medicine']) > 0:
             return create_response_obj(
-                parse_type(meds[meds[place['type']] == place['name']], obj='medicines',
+                parse_type(meds[(meds[place['type']] == place['name']) | (meds['city'] == place['name'])], obj='medicines',
                            area=place['name']))
         elif 'Plasma' in params and len(params['Plasma']) > 0:
+            print(plasma[plasma[place['type']] == place['name']])
             return create_response_obj(
-                parse_type(plasma[plasma[place['type']] == place['name']], obj='plasma',
+                parse_type(plasma[(plasma[place['type']] == place['name']) | (plasma['city'] == place['name'])], obj='plasma',
                            area=place['name']))
     return create_response_obj(
         "Sorry, I did not recognize this request"
